@@ -48,16 +48,21 @@ main:
 
 
 line:
- TAB* (
-       comment
-       | function_def comment*
-       | function_call+ comment*
-       | atom* comment
-       | MULTILINE_COMMENT_BOUNDARY
-       | atom+ )
- | NEWLINE
+ NEWLINE TABS* line_items+
+ | TABS* line_items+
+ | TABS
+ | NEWLINE+
  ;
 
+line_items:
+   function
+   | function_call+  comment_line*
+   | atom* comment_line
+   | atom+
+//   | multiline_c
+   | comment_line
+   | NEWLINE
+;
 atom:
  STRING
  | NUMBER
@@ -70,14 +75,24 @@ atom:
 
 ;
 
+function:
+  function_def
+    comment_line*
+    ((NEWLINE TABS comment_line)
+    |(NEWLINE TABS  comment_line*))+
+  ;
+
+function_def_args_list:
+ START_LIST function_arg* END_LIST
+ ;
 
 function_def:
- DEF FUNCTION_NAME function_def_args_list NEWLINE TABS
+ DEF FUNCTION_NAME function_def_args_list
  ;
 
 function_call:
  FUNCTION_NAME atom+
- // | FUNCTION_NAME
+ | FUNCTION_NAME
  ;
 
 list:
@@ -85,15 +100,16 @@ list:
  | START_LIST atom+ END_LIST
  ;
 
-function_def_args_list:
- START_LIST function_arg* END_LIST
- ;
-
 function_arg:
  VARIABLE_NAME
  ;
 
-comment:
+//multiline_c:
+//  //MULTILINE_COMMENT_BOUNDARY NEWLINE TABS+ .* NEWLINE MULTILINE_COMMENT_BOUNDARY
+//  MULTILINE_COMMENT_BOUNDARY MULTILINE_CONTENT_LINE* MULTILINE_COMMENT_BOUNDARY
+// ;
+
+comment_line:
     COMMENT_LINE
   ;
 
@@ -156,6 +172,7 @@ SPECIAL_FUNCTION
     | NOT_EQ) ':'
     ;
 
+
 ADD : '+';
 ASSIGN  : '=' ;
 MINUS : '-';
@@ -198,6 +215,9 @@ SKIP_
  : ( SPACES |  LINE_JOINING ) -> skip
  ;
 
+//MULTILINE_COMMENT_BOUNDARY
+// : TABS* '##' NEWLINE
+// ;
 
 COMMENT_LINE:
   TABS* (
@@ -205,14 +225,22 @@ COMMENT_LINE:
         | AUTO_GENERATED_COMMENT_START
          )
   ~'\n'*
+  NEWLINE
   ;
+
+
+HUMAN_COMMENT_START : '#';
+AUTO_GENERATED_COMMENT_START: '#=';
+
+// line rule handles tabs before each line
+// but this is called within MULTILINE_COMMENT
+//MULTILINE_CONTENT_LINE
+//  : TABS ~'\n'* NEWLINE
+//  ;
 
 TABS
  : [\t]+
  ;
-HUMAN_COMMENT_START : '#';
-AUTO_GENERATED_COMMENT_START: '#=';
-
 
 
 UNKNOWN_CHAR
@@ -270,12 +298,6 @@ fragment SPACES
 
 
 
-fragment MULTILINE_COMMENT
- : MULTILINE_COMMENT_BOUNDARY UNKNOWN_CHAR* NEWLINE MULTILINE_COMMENT_BOUNDARY
- ;
-fragment MULTILINE_COMMENT_BOUNDARY
- : SPACES* '##' [\r\n\f]+
- ;
 fragment LINE_JOINING
  : '\\' SPACES? ( '\r'? '\n' | '\r' | '\f')
  ;
