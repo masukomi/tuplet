@@ -48,13 +48,13 @@ main:
 
 
 line:
- NEWLINE TABS* line_items+
- | TABS* line_items+
+ NEWLINE TABS* line_items_and_function_def+
+ | TABS* line_items_and_function_def+
  | TABS
  | NEWLINE+
  ;
 
-line_items:
+line_items_and_function_def:
    function
    | function_call+  comment_line*
    | atom* comment_line
@@ -63,6 +63,16 @@ line_items:
    | comment_line
    | NEWLINE
 ;
+
+line_items:
+   function_call+  comment_line*
+   | atom* comment_line
+   | atom+
+//   | multiline_c
+   | comment_line
+   | NEWLINE
+;
+
 atom:
  STRING
  | NUMBER
@@ -78,8 +88,9 @@ atom:
 function:
   function_def
     comment_line*
-    ((NEWLINE TABS comment_line)
-    |(NEWLINE TABS  comment_line*))+
+    ( (NEWLINE TABS comment_line*)
+      |(NEWLINE TABS  line_items*)
+     )+
   ;
 
 function_def_args_list:
@@ -225,7 +236,6 @@ COMMENT_LINE:
         | AUTO_GENERATED_COMMENT_START
          )
   ~'\n'*
-  NEWLINE
   ;
 
 
