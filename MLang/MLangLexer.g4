@@ -106,7 +106,7 @@ NAME
  | VARIABLE_NAME
  ;
 
-GLOBAL_VARIABLE_NAME : '@' ID_START ID_CONTINUE* ;
+GLOBAL_VARIABLE_NAME : GLOBAL_ID_START GLOBAL_ID_CONTINUE* ;
 
 VARIABLE_NAME : ID_START ID_CONTINUE* ;
 
@@ -237,11 +237,22 @@ fragment UNICODE_OIDC
  ;
 
 /// id_start     ::=  <all characters in general categories Lu, Ll, Lt, Lm, Lo, Nl, and characters with the Other_ID_Start property>
+//fragment ID_START
+// : [\p{L}]
+// | [\p{Nl}]
+// //| [\p{Other_ID_Start}]
+// | UNICODE_OIDS
+// ;
 fragment ID_START
- : [\p{L}]
- | [\p{Nl}]
- //| [\p{Other_ID_Start}]
- | UNICODE_OIDS
+ : [a-z]
+ ;
+fragment GLOBAL_ID_START
+ : '@' [A-Z]
+ ;
+fragment GLOBAL_ID_CONTINUE
+ : [A-Z_] DIGIT*
+ | DIGIT [A-Z_]*
+
  ;
 
 /// id_continue  ::=  <all characters in id_start, plus characters in the categories Mn, Mc, Nd, Pc and others with the Other_ID_Continue property>
