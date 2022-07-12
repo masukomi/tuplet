@@ -42,30 +42,60 @@ tokens { INDENT, DEDENT }
 /*
  * parser rules
  */
-main: NEWLINE
-  | atom+ NEWLINE
-  | function_def atom+
-  | COMMENT
-  | MULTILINE_COMMENT;
+main:
+  line+
+  ;
 
-// FIXME: FUNCTION_NAME shouldn't be necessary
-// something to do with the ordering of things below
+
+line:
+ TAB* (
+       comment
+       | function_def comment*
+       | function_call+ comment*
+       | atom* comment
+       | MULTILINE_COMMENT_BOUNDARY
+       | atom+ )
+ | NEWLINE
+ ;
+
 atom:
  STRING
- | FUNCTION_NAME
- | NAME
  | NUMBER
+ | RETURN
+ | TRUE
+ | FALSE
+ | GLOBAL_VARIABLE_NAME
+ | VARIABLE_NAME
  | list
+
 ;
 
+
 function_def:
- DEF FUNCTION_NAME list NEWLINE TABS
+ DEF FUNCTION_NAME function_def_args_list NEWLINE TABS
+ ;
+
+function_call:
+ FUNCTION_NAME atom+
+ // | FUNCTION_NAME
  ;
 
 list:
  START_LIST END_LIST
  | START_LIST atom+ END_LIST
  ;
+
+function_def_args_list:
+ START_LIST function_arg* END_LIST
+ ;
+
+function_arg:
+ VARIABLE_NAME
+ ;
+
+comment:
+    COMMENT_LINE
+  ;
 
 
 /*
@@ -97,8 +127,14 @@ NEWLINE : '\n';
 //   {this.onNewLine();}
 // ;
 
-FUNCTION_NAME : ID_START FUNCTION_ID_CONTINUE* FUNCTION_ID_END ;
+GLOBAL_VARIABLE_NAME :  GLOBAL_ID_START GLOBAL_ID_CONTINUE* ;
+
+FUNCTION_NAME
+  : ID_START FUNCTION_ID_CONTINUE* FUNCTION_ID_END
+  | SPECIAL_FUNCTION
+  ;
 /// identifier   ::=  id_start id_continue*
+VARIABLE_NAME : ID_START ID_CONTINUE* ;
 
 NAME
  : GLOBAL_VARIABLE_NAME
@@ -106,9 +142,32 @@ NAME
  | VARIABLE_NAME
  ;
 
-GLOBAL_VARIABLE_NAME : GLOBAL_ID_START GLOBAL_ID_CONTINUE* ;
 
-VARIABLE_NAME : ID_START ID_CONTINUE* ;
+SPECIAL_FUNCTION
+ : (ASSIGN
+    | ADD
+    | MINUS
+    | DIV
+    | MOD
+    | LESS_THAN
+    | GREATER_THAN
+    | GT_EQ
+    | LT_EQ
+    | NOT_EQ) ':'
+    ;
+
+ADD : '+';
+ASSIGN  : '=' ;
+MINUS : '-';
+DIV : '/';
+MOD : '%';
+LESS_THAN : '<';
+GREATER_THAN : '>';
+EQUALS : '==';
+GT_EQ : '>=';
+LT_EQ : '<=';
+NOT_EQ : '!=';
+
 
 
 /// stringliteral   ::=  [stringprefix](shortstring | longstring)
@@ -136,12 +195,25 @@ END_LIST : ']' {this.closeBrace();};
 AT : '@';
 
 SKIP_
- : ( SPACES | COMMENT | LINE_JOINING ) -> skip
+ : ( SPACES |  LINE_JOINING ) -> skip
  ;
+
+
+COMMENT_LINE:
+  TABS* (
+        HUMAN_COMMENT_START
+        | AUTO_GENERATED_COMMENT_START
+         )
+  ~'\n'*
+  ;
 
 TABS
  : [\t]+
  ;
+HUMAN_COMMENT_START : '#';
+AUTO_GENERATED_COMMENT_START: '#=';
+
+
 
 UNKNOWN_CHAR
  : .
@@ -195,16 +267,14 @@ fragment SPACES
  : [ ]+
  ;
 
-fragment COMMENT
- : '#=' ~[\r\n\f]*
- | '#' ~[\r\n\f]*
- ;
 
-fragment MULTILINE_COMMENT_BOUNDARY
- : SPACES* '##' [\r\n\f]+
- ;
+
+
 fragment MULTILINE_COMMENT
  : MULTILINE_COMMENT_BOUNDARY UNKNOWN_CHAR* NEWLINE MULTILINE_COMMENT_BOUNDARY
+ ;
+fragment MULTILINE_COMMENT_BOUNDARY
+ : SPACES* '##' [\r\n\f]+
  ;
 fragment LINE_JOINING
  : '\\' SPACES? ( '\r'? '\n' | '\r' | '\f')
@@ -246,14 +316,19 @@ fragment UNICODE_OIDC
 fragment ID_START
  : [a-z]
  ;
+
+
+
 fragment GLOBAL_ID_START
  : '@' [A-Z]
  ;
 fragment GLOBAL_ID_CONTINUE
- : [A-Z_] DIGIT*
- | DIGIT [A-Z_]*
-
+ : [A-Z_]+ DIGIT*
+ | DIGIT+ [A-Z_]*
  ;
+
+
+
 
 /// id_continue  ::=  <all characters in id_start, plus characters in the categories Mn, Mc, Nd, Pc and others with the Other_ID_Continue property>
 fragment ID_CONTINUE
@@ -270,12 +345,12 @@ fragment ID_CONTINUE
 fragment FUNCTION_ID_CONTINUE
  : ID_START
  | '-'
- | [\p{Mn}]
- | [\p{Mc}]
- | [\p{Nd}]
- | [\p{Pc}]
- //| [\p{Other_ID_Continue}]
- | UNICODE_OIDC
+// | [\p{Mn}]
+// | [\p{Mc}]
+// | [\p{Nd}]
+// | [\p{Pc}]
+// //| [\p{Other_ID_Continue}]
+// | UNICODE_OIDC
  ;
 fragment FUNCTION_ID_END
  : [!?]? ':'
