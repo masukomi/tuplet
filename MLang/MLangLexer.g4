@@ -48,8 +48,11 @@ main: NEWLINE
   | COMMENT
   | MULTILINE_COMMENT;
 
+// FIXME: FUNCTION_NAME shouldn't be necessary
+// something to do with the ordering of things below
 atom:
  STRING
+ | FUNCTION_NAME
  | NAME
  | NUMBER
  | list
