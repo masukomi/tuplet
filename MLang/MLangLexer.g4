@@ -84,8 +84,13 @@ function:
      )+
   ;
 
+// []
+// [foo bar]
+// [foo
+// \t   bar]
 function_def_args_list:
  START_LIST function_arg* END_LIST
+ | START_LIST function_arg (function_arg | NEWLINE TABS function_arg)* END_LIST
  ;
 // the function def line
 function_signature:
@@ -99,7 +104,7 @@ function_call:
 
 list:
  START_LIST END_LIST
- | START_LIST atom+ END_LIST
+ | START_LIST (atom | NEWLINE TABS atom)+ END_LIST
  ;
 
 function_arg:
