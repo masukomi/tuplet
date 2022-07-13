@@ -202,8 +202,9 @@ NOT_EQ : '!=';
 // ;
 
 fragment ESCAPED_QUOTE : '\\"';
-STRING_LITERAL : '"' ( ESCAPED_QUOTE | ~('\n'|'\r') )*? '"'
-        | '\'' ( ESCAPED_QUOTE | ~('\n'|'\r') )*? '\'';
+STRING_LITERAL
+  : '"' ( ESCAPED_QUOTE | . )*? '"'
+  | '\'' ( ESCAPED_QUOTE | . )*? '\'';
 
 
 
