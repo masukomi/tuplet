@@ -48,21 +48,11 @@ main:
 
 
 line:
- NEWLINE TABS* line_items_and_function_def+
- | TABS* line_items_and_function_def+
+ NEWLINE TABS* (line_items | function)+
+ | TABS* (line_items | function)+
  | TABS
  | NEWLINE+
  ;
-
-line_items_and_function_def:
-   function
-   | function_call+  comment_line*
-   | atom* comment_line
-   | atom+
-//   | multiline_c
-   | comment_line
-   | NEWLINE
-;
 
 line_items:
    function_call+  comment_line*
@@ -85,8 +75,9 @@ atom:
 
 ;
 
+// a full function definition
 function:
-  function_def
+  function_signature
     comment_line*
     ( (NEWLINE TABS comment_line*)
       |(NEWLINE TABS  line_items*)
@@ -96,8 +87,8 @@ function:
 function_def_args_list:
  START_LIST function_arg* END_LIST
  ;
-
-function_def:
+// the function def line
+function_signature:
  DEF FUNCTION_NAME function_def_args_list
  ;
 
