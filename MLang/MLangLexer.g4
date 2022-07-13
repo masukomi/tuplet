@@ -49,6 +49,7 @@ main:
 
 line:
  NEWLINE TABS* (line_items | function)+
+ | NEWLINE MULTILINE_COMMENT
  | TABS* (line_items | function)+
  | TABS
  | NEWLINE+
@@ -223,27 +224,19 @@ SKIP_
  : ( SPACES |  LINE_JOINING ) -> skip
  ;
 
-//MULTILINE_COMMENT_BOUNDARY
-// : TABS* '##' NEWLINE
-// ;
-
 COMMENT_LINE:
   TABS* (
-        HUMAN_COMMENT_START
+        HUMAN_COMMENT_START+
         | AUTO_GENERATED_COMMENT_START
          )
   ~'\n'*
   ;
 
-
 HUMAN_COMMENT_START : '#';
 AUTO_GENERATED_COMMENT_START: '#=';
 
-// line rule handles tabs before each line
-// but this is called within MULTILINE_COMMENT
-//MULTILINE_CONTENT_LINE
-//  : TABS ~'\n'* NEWLINE
-//  ;
+
+MULTILINE_COMMENT:  TABS* '##' NEWLINE .* TABS* '##' NEWLINE;
 
 TABS
  : [\t]+
