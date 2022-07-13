@@ -74,7 +74,7 @@ atom:
  | list
 
 ;
-
+string: STRING;
 // a full function definition
 function:
   function_signature
@@ -201,9 +201,9 @@ NOT_EQ : '!=';
 // : ( [rR] | [uU] | [fF] | ( [fF] [rR] ) | ( [rR] [fF] ) )? ( SHORT_STRING  )
 // ;
 
-STRING_LITERAL
- : '"' .*? '"'
- ;
+fragment ESCAPED_QUOTE : '\\"';
+STRING_LITERAL : '"' ( ESCAPED_QUOTE | ~('\n'|'\r') )*? '"'
+        | '\'' ( ESCAPED_QUOTE | ~('\n'|'\r') )*? '\'';
 
 
 
