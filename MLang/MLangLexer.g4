@@ -57,6 +57,7 @@ line:
 
 line_items:
    function_call+  comment_line*
+   | variable_declaration
    | atom* comment_line
    | atom+
 //   | multiline_c
@@ -153,6 +154,10 @@ simple_function_args:
    VARIABLE_NAME | NEWLINE TABS VARIABLE_NAME
 ;
 
+variable_declaration:
+    VAR_FUNC (GLOBAL_VARIABLE_NAME | VARIABLE_NAME) atom comment_line*
+;
+
 /*
  * lexer rules
  */
@@ -169,7 +174,7 @@ STRING
 
 
 DEF : 'def';
-VAL : 'val';
+VAR_FUNC : 'var:';
 RETURN : 'return';
 TRUE : 'true';
 FALSE : 'false';
