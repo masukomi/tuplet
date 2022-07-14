@@ -66,7 +66,7 @@ line_items:
 
 atom:
  STRING
- | NUMBER
+ | number
  | boolean
  | GLOBAL_VARIABLE_NAME
  | VARIABLE_NAME
@@ -115,7 +115,7 @@ comment_line:
     COMMENT_LINE
   ;
 boolean: TRUE | FALSE;
-
+number: DECIMAL | INTEGER;
 
 
 function_args:
@@ -137,7 +137,7 @@ default_parameter_def
 
 default_parameter_value:
  STRING
- | NUMBER
+ | number
  | boolean
  | GLOBAL_VARIABLE_NAME
 ;
@@ -162,10 +162,10 @@ STRING
  : STRING_LITERAL
  ;
 
-NUMBER
- : INTEGER
- | DECIMAL
- ;
+//NUMBER
+// : INTEGER
+// | DECIMAL
+// ;
 
 
 DEF : 'def';
@@ -314,9 +314,7 @@ fragment INT_PART
  ;
 
 /// DECIMAL      ::=  "." digit+
-fragment DECIMAL
- : DIGIT+ '.' DIGIT+
- ;
+DECIMAL : DIGIT+ '.' DIGIT+ ;
 
 /// exponent      ::=  ("e" | "E") ["+" | "-"] digit+
 fragment EXPONENT
