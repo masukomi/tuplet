@@ -68,8 +68,7 @@ atom:
  STRING
  | NUMBER
  | RETURN
- | TRUE
- | FALSE
+ | boolean
  | GLOBAL_VARIABLE_NAME
  | VARIABLE_NAME
  | list
@@ -111,18 +110,48 @@ list:
 // [foo bar+]
 // * == 0 or more args associated with name
 // + == 1 or more args associated with name
-function_args:
-VARIABLE_NAME (VARIABLE_NAME | NEWLINE TABS VARIABLE_NAME)*
-| (VARIABLE_NAME | NEWLINE TABS VARIABLE_NAME)+
-    (NEWLINE TABS)* VARIABLE_NAME ('*' | '+')
-| (VARIABLE_NAME | NEWLINE TABS VARIABLE_NAME)*
-;
 
 
 comment_line:
     COMMENT_LINE
   ;
+boolean: TRUE | FALSE;
 
+
+
+function_args:
+    // foo [bar "baz] (multiple defaults)
+    simple_function_args+ defaultable_function_arg+
+    // foo bar baz* (only one variadic)
+    | simple_function_args+  defaultable_function_arg+ variadic_function_arg
+    // foo+
+    | simple_function_args*
+    // <nothing>
+;
+defaultable_function_arg
+ : newline_and_tabs*  default_parameter_def+
+;
+
+default_parameter_def
+: START_LIST VARIABLE_NAME default_parameter_value END_LIST
+;
+
+default_parameter_value:
+ STRING
+ | NUMBER
+ | boolean
+ | GLOBAL_VARIABLE_NAME
+;
+
+
+variadic_function_arg:
+ VARIABLE_NAME ('*' | '+')
+ ;
+
+newline_and_tabs: NEWLINE TABS;
+simple_function_args:
+   VARIABLE_NAME | NEWLINE TABS VARIABLE_NAME
+;
 
 /*
  * lexer rules
