@@ -67,7 +67,6 @@ line_items:
 atom:
  STRING
  | NUMBER
- | RETURN
  | boolean
  | GLOBAL_VARIABLE_NAME
  | VARIABLE_NAME
@@ -122,8 +121,8 @@ boolean: TRUE | FALSE;
 function_args:
     // foo [bar "baz] (multiple defaults)
     simple_function_args+ defaultable_function_arg+
-    // foo bar baz* (only one variadic)
-    | simple_function_args+  defaultable_function_arg+ variadic_function_arg
+    // foo [bar baz* (only one variadic)
+    | simple_function_args+ variadic_function_arg
     // foo+
     | simple_function_args*
     // <nothing>
@@ -147,6 +146,7 @@ default_parameter_value:
 variadic_function_arg:
  VARIABLE_NAME ('*' | '+')
  ;
+
 
 newline_and_tabs: NEWLINE TABS;
 simple_function_args:
@@ -208,7 +208,8 @@ SPECIAL_FUNCTION
     | GREATER_THAN
     | GT_EQ
     | LT_EQ
-    | NOT_EQ) ':'
+    | NOT_EQ
+    | RETURN) ':'
     ;
 
 
