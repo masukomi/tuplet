@@ -85,13 +85,8 @@ function:
      )+
   ;
 
-// []
-// [foo bar]
-// [foo
-// \t   bar]
 function_def_args_list:
- START_LIST function_arg* END_LIST
- | START_LIST function_arg (function_arg | NEWLINE TABS function_arg)* END_LIST
+  START_LIST function_args END_LIST
  ;
 // the function def line
 function_signature:
@@ -108,14 +103,21 @@ list:
  | START_LIST (atom | NEWLINE TABS atom)+ END_LIST
  ;
 
-function_arg:
- VARIABLE_NAME
- ;
+// [],
+// [foo bar],
+// [foo
+// \t   bar],
+// [foo*], [foo+],
+// [foo bar+]
+// * == 0 or more args associated with name
+// + == 1 or more args associated with name
+function_args:
+VARIABLE_NAME (VARIABLE_NAME | NEWLINE TABS VARIABLE_NAME)*
+| (VARIABLE_NAME | NEWLINE TABS VARIABLE_NAME)+
+    (NEWLINE TABS)* VARIABLE_NAME ('*' | '+')
+| (VARIABLE_NAME | NEWLINE TABS VARIABLE_NAME)*
+;
 
-//multiline_c:
-//  //MULTILINE_COMMENT_BOUNDARY NEWLINE TABS+ .* NEWLINE MULTILINE_COMMENT_BOUNDARY
-//  MULTILINE_COMMENT_BOUNDARY MULTILINE_CONTENT_LINE* MULTILINE_COMMENT_BOUNDARY
-// ;
 
 comment_line:
     COMMENT_LINE
