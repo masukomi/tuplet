@@ -50,7 +50,7 @@ main:
 line:
  newline_and_tabs* line_items+ // includes trailing comments
  | newline_and_tabs function_signature comment_line?
- | NEWLINE MULTILINE_COMMENT
+ | multiline_comment
  | TABS* line_items+
  | TABS* function_signature
  | newline_and_tabs+
@@ -157,6 +157,8 @@ variable_declaration:
     VAR_FUNC (GLOBAL_VARIABLE_NAME | VARIABLE_NAME) atom comment_line*
 ;
 
+multiline_comment: MULTILINE_COMMENT;
+tabs: TABS;
 /*
  * lexer rules
  */
@@ -272,7 +274,7 @@ HUMAN_COMMENT_START : '#';
 AUTO_GENERATED_COMMENT_START: '#=';
 
 
-MULTILINE_COMMENT:  TABS* '##' NEWLINE .* TABS* '##' NEWLINE;
+MULTILINE_COMMENT:  NEWLINE TABS* '##' NEWLINE .* TABS* '##' NEWLINE;
 
 TABS
  : [\t]+
