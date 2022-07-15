@@ -48,7 +48,7 @@ main:
 
 
 line:
- NEWLINE TABS* line_items+ comment_line?
+ NEWLINE TABS* line_items+ // includes trailing comments
  | NEWLINE TABS function_signature comment_line?
  | NEWLINE MULTILINE_COMMENT
  | TABS* line_items+
@@ -58,11 +58,10 @@ line:
  ;
 
 line_items:
-   function_call+  comment_line*
+   function_call+  comment_line?
    | variable_declaration
    | atom* comment_line
-   | atom+
-//   | multiline_c
+   | atom+ comment_line?
    | comment_line
    | NEWLINE
 ;
@@ -87,10 +86,10 @@ string: STRING;
 //  ]
 // [ foo
 //   bar ] # comment
-
 function_def_args_list:
-  START_LIST (function_args | commented_function_args)* (NEWLINE TABS)* END_LIST comment_line?
+  START_LIST ( function_args comment_line? NEWLINE TABS| function_args )* (NEWLINE TABS)* END_LIST comment_line?
  ;
+
 
 // the function def line
 function_signature:
@@ -104,7 +103,7 @@ function_call:
 
 list:
  START_LIST END_LIST
- | START_LIST (atom | NEWLINE TABS atom)+ END_LIST
+ | START_LIST (atom comment_line?| NEWLINE TABS atom comment_line?)+ END_LIST
  ;
 
 
@@ -114,16 +113,6 @@ comment_line:
 boolean: TRUE | FALSE;
 number: DECIMAL | INTEGER;
 
-
-commented_function_args:
-    // foo [bar "baz] (multiple defaults)
-    simple_function_args+ defaultable_function_arg+ comment_line NEWLINE TABS
-    // foo [bar baz* (only one variadic)
-    | simple_function_args+ variadic_function_arg comment_line NEWLINE TABS
-    // foo+
-    | simple_function_args* comment_line NEWLINE TABS
-    // <nothing>
-;
 function_args:
     // foo [bar "baz] (multiple defaults)
     simple_function_args+ defaultable_function_arg+
