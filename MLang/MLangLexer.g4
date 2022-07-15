@@ -48,7 +48,8 @@ main:
 
 
 line:
- NEWLINE TABS* (line_items | function)+
+ NEWLINE TABS* line_items+ comment_line?
+ | NEWLINE TABS function_signature comment_line?
  | NEWLINE MULTILINE_COMMENT
  | TABS* (line_items | function)+
  | TABS
@@ -95,8 +96,6 @@ function:
 
 function_def_args_list:
   START_LIST (function_args | commented_function_args)* (NEWLINE TABS)* END_LIST comment_line?
-  //| START_LIST function_args* (NEWLINE TABS)* END_LIST comment_line?
-  //| START_LIST  END_LIST comment_line?
  ;
 // the function def line
 function_signature:
