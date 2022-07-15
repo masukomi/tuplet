@@ -43,7 +43,7 @@ tokens { INDENT, DEDENT }
  * parser rules
  */
 main:
-  line+
+  line* EOF
   ;
 
 
@@ -79,13 +79,24 @@ string: STRING;
 function:
   function_signature
     comment_line*
-    ( (NEWLINE TABS comment_line*)
+    ( (NEWLINE TABS comment_line?)
       |(NEWLINE TABS  line_items*)
      )+
   ;
 
+// [foo]
+// [ foo bar #comment
+//     ]
+// [ foo bar #comment
+//   baz # comment
+//  ]
+// [ foo
+//   bar ] # comment
+
 function_def_args_list:
-  START_LIST function_args END_LIST
+  START_LIST (function_args | commented_function_args)* (NEWLINE TABS)* END_LIST comment_line?
+  //| START_LIST function_args* (NEWLINE TABS)* END_LIST comment_line?
+  //| START_LIST  END_LIST comment_line?
  ;
 // the function def line
 function_signature:
@@ -93,23 +104,14 @@ function_signature:
  ;
 
 function_call:
- FUNCTION_NAME atom+
- | FUNCTION_NAME
+ FUNCTION_NAME atom+ comment_line?
+ | FUNCTION_NAME comment_line?
  ;
 
 list:
  START_LIST END_LIST
  | START_LIST (atom | NEWLINE TABS atom)+ END_LIST
  ;
-
-// [],
-// [foo bar],
-// [foo
-// \t   bar],
-// [foo*], [foo+],
-// [foo bar+]
-// * == 0 or more args associated with name
-// + == 1 or more args associated with name
 
 
 comment_line:
@@ -119,15 +121,27 @@ boolean: TRUE | FALSE;
 number: DECIMAL | INTEGER;
 
 
+commented_function_args:
+    // foo [bar "baz] (multiple defaults)
+    simple_function_args+ defaultable_function_arg+ comment_line NEWLINE TABS
+    // foo [bar baz* (only one variadic)
+    | simple_function_args+ variadic_function_arg comment_line NEWLINE TABS
+    // foo+
+    | simple_function_args* comment_line NEWLINE TABS
+    // <nothing>
+;
 function_args:
     // foo [bar "baz] (multiple defaults)
     simple_function_args+ defaultable_function_arg+
     // foo [bar baz* (only one variadic)
     | simple_function_args+ variadic_function_arg
     // foo+
-    | simple_function_args*
+    | simple_function_args+
+    | variadic_function_arg
     // <nothing>
 ;
+
+
 defaultable_function_arg
  : newline_and_tabs*  default_parameter_def+
 ;
