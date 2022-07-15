@@ -48,12 +48,12 @@ main:
 
 
 line:
- NEWLINE TABS* line_items+ // includes trailing comments
- | NEWLINE TABS function_signature comment_line?
+ newline_and_tabs* line_items+ // includes trailing comments
+ | newline_and_tabs function_signature comment_line?
  | NEWLINE MULTILINE_COMMENT
  | TABS* line_items+
  | TABS* function_signature
- | (NEWLINE TABS*)+
+ | newline_and_tabs+
  | TABS // potentially trailing tabs, which we don't want
  ;
 
@@ -87,7 +87,7 @@ string: STRING;
 // [ foo
 //   bar ] # comment
 function_def_args_list:
-  START_LIST ( function_args comment_line? NEWLINE TABS| function_args )* (NEWLINE TABS)* END_LIST comment_line?
+  START_LIST ( function_args comment_line? newline_and_tabs| function_args )* (newline_and_tabs)* END_LIST comment_line?
  ;
 
 
@@ -103,7 +103,7 @@ function_call:
 
 list:
  START_LIST END_LIST
- | START_LIST (atom comment_line?| NEWLINE TABS atom comment_line?)+ END_LIST
+ | START_LIST (atom comment_line?| newline_and_tabs atom comment_line?)+ END_LIST
  ;
 
 
@@ -129,6 +129,8 @@ defaultable_function_arg
  : newline_and_tabs*  default_parameter_def+
 ;
 
+// no, you can't break this over multiple lines.
+// deal. :P
 default_parameter_def
 : START_LIST VARIABLE_NAME default_parameter_value END_LIST
 ;
@@ -148,7 +150,7 @@ variadic_function_arg:
 
 newline_and_tabs: NEWLINE TABS;
 simple_function_args:
-   VARIABLE_NAME | NEWLINE TABS VARIABLE_NAME
+   VARIABLE_NAME | newline_and_tabs VARIABLE_NAME
 ;
 
 variable_declaration:
