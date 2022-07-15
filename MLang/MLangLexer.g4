@@ -51,9 +51,10 @@ line:
  NEWLINE TABS* line_items+ comment_line?
  | NEWLINE TABS function_signature comment_line?
  | NEWLINE MULTILINE_COMMENT
- | TABS* (line_items | function)+
- | TABS
- | NEWLINE+
+ | TABS* line_items+
+ | TABS* function_signature
+ | (NEWLINE TABS*)+
+ | TABS // potentially trailing tabs, which we don't want
  ;
 
 line_items:
@@ -76,14 +77,7 @@ atom:
 
 ;
 string: STRING;
-// a full function definition
-function:
-  function_signature
-    comment_line*
-    ( (NEWLINE TABS comment_line?)
-      |(NEWLINE TABS  line_items*)
-     )+
-  ;
+
 
 // [foo]
 // [ foo bar #comment
@@ -97,6 +91,7 @@ function:
 function_def_args_list:
   START_LIST (function_args | commented_function_args)* (NEWLINE TABS)* END_LIST comment_line?
  ;
+
 // the function def line
 function_signature:
  DEF FUNCTION_NAME function_def_args_list
