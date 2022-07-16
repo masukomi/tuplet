@@ -35,6 +35,9 @@ function string-join: () {
 # }
 # use-string-split:
 #
+# WARNING: this will not produce the correct results if
+# your string contains the DEL character (\x74)
+#
 function string-split: () {
 	#= [array_ref split_sequence string_to_split] => nil
 	#  populates array_ref with results of split
