@@ -51,10 +51,10 @@ line:
  newline_and_tabs* line_items+ // includes trailing comments
  | newline_and_tabs? function_signature comment_line?
  | multiline_comment
- | TABS* line_items+
- | TABS* function_signature
+ | tabs* line_items+
+ | tabs* function_signature
  | newline_and_tabs+
- | TABS // potentially trailing tabs, which we don't want
+ | tabs // potentially trailing tabs, which we don't want
  ;
 
 line_items:
@@ -62,7 +62,7 @@ line_items:
    | variable_declaration
    | atom* comment_line
    | atom+ comment_line?
-   | NEWLINE
+   | newline
 ;
 
 atom:
@@ -77,6 +77,7 @@ atom:
 
 ;
 string: STRING;
+newline: NEWLINE;
 
 
 // [foo]
@@ -204,12 +205,6 @@ TRUE : 'true';
 FALSE : 'false';
 
 NEWLINE : '\n';
-//NEWLINE
-// : ( {this.atStartOfInput()}?
-//   | ( '\r'? '\n' | '\r' | '\f' )
-//   )
-//   {this.onNewLine();}
-// ;
 
 GLOBAL_VARIABLE_NAME :  GLOBAL_ID_START GLOBAL_ID_CONTINUE* ;
 
@@ -217,7 +212,6 @@ FUNCTION_NAME
   : ID_START FUNCTION_ID_CONTINUE* FUNCTION_ID_END
   | SPECIAL_FUNCTION
   ;
-/// identifier   ::=  id_start id_continue*
 VARIABLE_NAME : ID_START ID_CONTINUE* ;
 
 NAME
@@ -277,10 +271,10 @@ INTEGER
  ;
 
 
-START_LIST : '[' {this.openBrace();};
-END_LIST : ']' {this.closeBrace();};
-START_DICTIONARY : '{' {this.openBrace();};
-END_DICTIONARY : '}' {this.closeBrace();};
+START_LIST : '[' ;
+END_LIST : ']' ;
+START_DICTIONARY : '{' ;
+END_DICTIONARY : '}' ;
 AT : '@';
 
 SKIP_
