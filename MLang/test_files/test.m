@@ -1,7 +1,7 @@
 {a => "dictionary" # comment
 	"spanning" => 3
 	lines => yo} # comment
-["a" "list"
+var mah_list ["a" "list"
 	"that spans lines" ]
 "a string
 	that spans lines"
@@ -9,6 +9,10 @@
 		multiline comment line 1
 			indented multiline comment line 2
 ##
+def map: [function_ref list]
+	magic_here
+
+map: maybe:~ mah_list
 
 def foo: [arg1 arg2]
 	bar: arg1 arg2

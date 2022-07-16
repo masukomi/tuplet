@@ -49,7 +49,7 @@ main:
 
 line:
  newline_and_tabs* line_items+ // includes trailing comments
- | newline_and_tabs function_signature comment_line?
+ | newline_and_tabs? function_signature comment_line?
  | multiline_comment
  | TABS* line_items+
  | TABS* function_signature
@@ -62,7 +62,6 @@ line_items:
    | variable_declaration
    | atom* comment_line
    | atom+ comment_line?
-   | comment_line
    | NEWLINE
 ;
 
@@ -71,6 +70,7 @@ atom:
  | number
  | boolean
  | GLOBAL_VARIABLE_NAME
+ | FUNCTION_REF
  | VARIABLE_NAME
  | list
  | dictionary
@@ -101,6 +101,10 @@ function_call:
  FUNCTION_NAME atom+ comment_line?
  | FUNCTION_NAME comment_line?
  ;
+
+FUNCTION_REF:
+  FUNCTION_NAME '~'
+;
 
 list:
  START_LIST END_LIST
@@ -154,7 +158,8 @@ default_parameter_def
 ;
 
 default_parameter_value:
- STRING
+ FUNCTION_REF
+ | STRING
  | number
  | boolean
  | GLOBAL_VARIABLE_NAME
@@ -168,7 +173,7 @@ variadic_function_arg:
 
 newline_and_tabs: NEWLINE TABS;
 simple_function_args:
-   VARIABLE_NAME | newline_and_tabs VARIABLE_NAME
+    newline_and_tabs? (FUNCTION_REF | VARIABLE_NAME)
 ;
 
 variable_declaration:
