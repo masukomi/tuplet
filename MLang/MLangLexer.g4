@@ -73,6 +73,7 @@ atom:
  | GLOBAL_VARIABLE_NAME
  | VARIABLE_NAME
  | list
+ | dictionary
 
 ;
 string: STRING;
@@ -106,6 +107,23 @@ list:
  | START_LIST (atom comment_line?| newline_and_tabs atom comment_line?)+ END_LIST
  ;
 
+dictionary:
+ START_DICTIONARY END_DICTIONARY
+ | START_DICTIONARY (dictionary_pair comment_line?| newline_and_tabs dictionary_pair comment_line?)+ END_DICTIONARY
+ ;
+dictionary_pair:
+    dictionary_key '=>' atom
+;
+
+dictionary_key:
+ STRING
+ | number
+ | boolean
+ | GLOBAL_VARIABLE_NAME
+ | VARIABLE_NAME
+ | function_call
+ // note: dosen't include lists or hashes
+ ;
 
 comment_line:
     COMMENT_LINE
@@ -256,6 +274,8 @@ INTEGER
 
 START_LIST : '[' {this.openBrace();};
 END_LIST : ']' {this.closeBrace();};
+START_DICTIONARY : '{' {this.openBrace();};
+END_DICTIONARY : '}' {this.closeBrace();};
 AT : '@';
 
 SKIP_
