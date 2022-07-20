@@ -14,9 +14,9 @@ main:
 
 
 line:
-
- newline_and_tabs? function_signature comment_line?
- | newline_and_tabs* line_items+ // includes trailing comments
+  function_signature
+  |  newline_and_tabs* line_items+ // includes trailing comments
+ | newline_and_tabs? function_signature comment_line?
  | newline function_types_comment
  | multiline_comment
  | tabs* line_items+
@@ -59,7 +59,11 @@ newline: NEWLINE;
 // [ foo
 //   bar ] # comment
 function_def_args_list:
-  START_LIST ( function_args comment_line? newline_and_tabs| function_args )* (newline_and_tabs)* END_LIST comment_line?
+  START_LIST
+    ( function_args comment_line? newline_and_tabs| function_args )*
+    (newline_and_tabs)*
+    function_args*
+  END_LIST comment_line?
  ;
 
 // foo: [x, y]
@@ -73,13 +77,14 @@ function_def_args_list:
 // # [string <integer | float>* ] => string
 // # [integer] => [<string | float> integer]
 function_types_comment:
-  TABS* HUMAN_COMMENT_START+
+ TABS* HUMAN_COMMENT_START+
   START_LIST
     function_type_arg* (variadic_function_type_arg)?
     END_LIST
   ROCKET
   (START_LIST function_type_arg+ END_LIST | function_type_arg)
  ;
+
 variadic_function_type_arg: DATA_TYPE_NAME ('*' | '+');
 
 // the function def line
@@ -176,7 +181,7 @@ variadic_function_arg:
 
 newline_and_tabs: NEWLINE TABS;
 simple_function_args:
-    newline_and_tabs? (FUNCTION_REF | VARIABLE_NAME)
+    newline_and_tabs? (FUNCTION_REF | VARIABLE_NAME | DATA_TYPE_NAME)
 ;
 
 variable_declaration:
@@ -242,12 +247,11 @@ DATA_TYPE_NAME:
 
 VARIABLE_NAME :
 ID_START ID_CONTINUE*
-| DATA_TYPE_NAME
 // DATA_TYPE_NAMEs are not great variable names
 // but people do use them
 ;
 
-A_VARIABLE: GLOBAL_VARIABLE_NAME | VARIABLE_NAME;
+A_VARIABLE: GLOBAL_VARIABLE_NAME | VARIABLE_NAME | DATA_TYPE_NAME;
 NAME
  : GLOBAL_VARIABLE_NAME
  | FUNCTION_NAME
