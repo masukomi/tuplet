@@ -14,8 +14,9 @@ main:
 
 
 line:
- newline_and_tabs* line_items+ // includes trailing comments
- | newline_and_tabs? function_signature comment_line?
+
+ newline_and_tabs? function_signature comment_line?
+ | newline_and_tabs* line_items+ // includes trailing comments
  | newline function_types_comment
  | multiline_comment
  | tabs* line_items+
@@ -188,6 +189,14 @@ let_declaration:
 
 multiline_comment: MULTILINE_COMMENT;
 tabs: TABS;
+
+
+array_query:
+    A_VARIABLE START_LIST INTEGER END_LIST
+;
+dictionary_query:
+    A_VARIABLE START_DICTIONARY dictionary_key END_DICTIONARY
+;
 /*
  * lexer rules
  */
@@ -206,6 +215,7 @@ STRING
 DEF : 'def';
 VAR_FUNC : 'var:';
 LET_FUNC : 'let:';
+ERROR_FUNC : 'error:';
 RETURN : 'return';
 TRUE : 'true';
 FALSE : 'false';
@@ -237,6 +247,7 @@ ID_START ID_CONTINUE*
 // but people do use them
 ;
 
+A_VARIABLE: GLOBAL_VARIABLE_NAME | VARIABLE_NAME;
 NAME
  : GLOBAL_VARIABLE_NAME
  | FUNCTION_NAME
