@@ -1,3 +1,0 @@
-[submodule "ext/twiki_parser/antlr4-upstream"]
-	path = ext/twiki_parser/antlr4-upstream
-	url = https://github.com/antlr/antlr4
