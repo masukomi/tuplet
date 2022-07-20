@@ -39,11 +39,13 @@ atom:
  STRING
  | number
  | boolean
- | GLOBAL_VARIABLE_NAME
- | FUNCTION_REF
+ | array_query
+ | dictionary_query
  | VARIABLE_NAME
+ | GLOBAL_VARIABLE_NAME
  | list
  | dictionary
+ | FUNCTION_REF
 
 ;
 string: STRING;
@@ -197,10 +199,10 @@ tabs: TABS;
 
 
 array_query:
-    A_VARIABLE START_LIST INTEGER END_LIST
+    (GLOBAL_VARIABLE_NAME | VARIABLE_NAME) START_LIST INTEGER END_LIST
 ;
 dictionary_query:
-    A_VARIABLE START_DICTIONARY dictionary_key END_DICTIONARY
+    (GLOBAL_VARIABLE_NAME | VARIABLE_NAME) START_DICTIONARY dictionary_key END_DICTIONARY
 ;
 /*
  * lexer rules
@@ -251,7 +253,7 @@ ID_START ID_CONTINUE*
 // but people do use them
 ;
 
-A_VARIABLE: GLOBAL_VARIABLE_NAME | VARIABLE_NAME | DATA_TYPE_NAME;
+
 NAME
  : GLOBAL_VARIABLE_NAME
  | FUNCTION_NAME
