@@ -68,11 +68,16 @@ function_def_args_list:
 // foo: [x y*]
 // # [integer string*] => string
 // # [integer string*] => [string float hash]
+// # [<integer | float> string* ] => string
+// # [string <integer | float>* ] => string
+// # [integer] => [<string | float> integer]
 function_types_comment:
   TABS* HUMAN_COMMENT_START+
-  START_LIST function_type_args* END_LIST
+  START_LIST
+    function_type_arg* (DATA_TYPE_NAME ('*' | '+'))?
+    END_LIST
   ROCKET
-  (START_LIST DATA_TYPE_NAMES+ END_LIST | DATA_TYPE_NAME)
+  (START_LIST function_type_arg+ END_LIST | function_type_arg)
  ;
 
 // the function def line
@@ -133,10 +138,15 @@ function_args:
     | variadic_function_arg
     // <nothing>
 ;
-function_type_args:
-  DATA_TYPE_NAME+
-  | DATA_TYPE_NAME* variadic_function_arg
-  | variadic_data_type_names
+
+// string | integer boolean*
+// impling (string | integer) boolean*
+// maybe < string | integer > boolean*
+function_type_arg:
+  // string integer boolean*
+  DATA_TYPE_NAME
+  // < string | integer >
+  | LESS_THAN DATA_TYPE_NAME (ARG_OR DATA_TYPE_NAME)* GREATER_THAN
   ;
 
 defaultable_function_arg
@@ -161,9 +171,7 @@ default_parameter_value:
 variadic_function_arg:
  VARIABLE_NAME ('*' | '+')
  ;
-variadic_data_type_names:
- DATA_TYPE_NAME ('*' | '+')
- ;
+
 newline_and_tabs: NEWLINE TABS;
 simple_function_args:
     newline_and_tabs? (FUNCTION_REF | VARIABLE_NAME)
@@ -211,7 +219,8 @@ FUNCTION_NAME
   ;
 
 DATA_TYPE_NAME:
-  'boolean'
+  'any'
+  | 'boolean'
   | 'float'
   | 'function'
   | 'hash'
@@ -223,7 +232,7 @@ DATA_TYPE_NAME:
 VARIABLE_NAME :
 ID_START ID_CONTINUE*
 | DATA_TYPE_NAME
-// DATA_TYPE_NAMES are not great variable names
+// DATA_TYPE_NAMEs are not great variable names
 // but people do use them
 ;
 
@@ -261,6 +270,7 @@ GT_EQ : '>=';
 LT_EQ : '<=';
 NOT_EQ : '!=';
 ROCKET : '=>';
+ARG_OR : '|' ;
 
 /// stringliteral   ::=  [stringprefix](shortstring | longstring)
 /// stringprefix    ::=  "r" | "u" | "R" | "U" | "f" | "F"
