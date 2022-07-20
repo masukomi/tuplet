@@ -16,6 +16,7 @@ main:
 line:
  newline_and_tabs* line_items+ // includes trailing comments
  | newline_and_tabs? function_signature comment_line?
+ | newline function_types_comment
  | multiline_comment
  | tabs* line_items+
  | tabs* function_signature
@@ -25,6 +26,7 @@ line:
 
 line_items:
    function_call+  comment_line?
+   | function_types_comment
    | variable_declaration
    | atom* comment_line
    | atom+ comment_line?
@@ -58,6 +60,19 @@ function_def_args_list:
   START_LIST ( function_args comment_line? newline_and_tabs| function_args )* (newline_and_tabs)* END_LIST comment_line?
  ;
 
+// foo: [x, y]
+// # [integer string] => string
+// foo: [x, [y "b"]]
+// # [integer string] => string
+// foo: [x y*]
+// # [integer string*] => string
+// # [integer string*] => [string float hash]
+function_types_comment:
+  TABS* HUMAN_COMMENT_START+
+  START_LIST function_type_args* END_LIST
+  ROCKET
+  (START_LIST DATA_TYPE_NAMES+ END_LIST | DATA_TYPE_NAME)
+ ;
 
 // the function def line
 function_signature:
@@ -97,7 +112,12 @@ dictionary_key:
  ;
 
 comment_line:
-    COMMENT_LINE
+  function_types_comment
+  |    TABS* (
+             HUMAN_COMMENT_START+
+             | AUTO_GENERATED_COMMENT_START
+              )
+       ~'\n'*
   ;
 boolean: TRUE | FALSE;
 number: DECIMAL | INTEGER;
@@ -112,7 +132,11 @@ function_args:
     | variadic_function_arg
     // <nothing>
 ;
-
+function_type_args:
+  DATA_TYPE_NAME+
+  | DATA_TYPE_NAME* variadic_function_arg
+  | variadic_data_type_names
+  ;
 
 defaultable_function_arg
  : newline_and_tabs*  default_parameter_def+
@@ -136,8 +160,9 @@ default_parameter_value:
 variadic_function_arg:
  VARIABLE_NAME ('*' | '+')
  ;
-
-
+variadic_data_type_names:
+ DATA_TYPE_NAME ('*' | '+')
+ ;
 newline_and_tabs: NEWLINE TABS;
 simple_function_args:
     newline_and_tabs? (FUNCTION_REF | VARIABLE_NAME)
@@ -178,7 +203,23 @@ FUNCTION_NAME
   : ID_START FUNCTION_ID_CONTINUE* FUNCTION_ID_END
   | SPECIAL_FUNCTION
   ;
-VARIABLE_NAME : ID_START ID_CONTINUE* ;
+
+DATA_TYPE_NAME:
+  'boolean'
+  | 'float'
+  | 'function'
+  | 'hash'
+  | 'integer'
+  | 'list'
+  | 'string'
+  ;
+
+VARIABLE_NAME :
+ID_START ID_CONTINUE*
+| DATA_TYPE_NAME
+// DATA_TYPE_NAMES are not great variable names
+// but people do use them
+;
 
 NAME
  : GLOBAL_VARIABLE_NAME
@@ -213,8 +254,7 @@ EQUALS : '==';
 GT_EQ : '>=';
 LT_EQ : '<=';
 NOT_EQ : '!=';
-
-
+ROCKET : '=>';
 
 /// stringliteral   ::=  [stringprefix](shortstring | longstring)
 /// stringprefix    ::=  "r" | "u" | "R" | "U" | "f" | "F"
@@ -226,8 +266,8 @@ NOT_EQ : '!=';
 fragment ESCAPED_QUOTE : '\\"';
 STRING_LITERAL
   : '"' ( ESCAPED_QUOTE | . )*? '"'
-  | '\'' ( ESCAPED_QUOTE | . )*? '\'';
-
+  | '\'' ( ESCAPED_QUOTE | . )*? '\''
+;
 
 
 /// decimalinteger ::=  nonzerodigit digit* | "0"+
@@ -247,14 +287,6 @@ SKIP_
  : ( SPACES |  LINE_JOINING ) -> skip
  ;
 
-COMMENT_LINE:
-  TABS* (
-        HUMAN_COMMENT_START+
-        | AUTO_GENERATED_COMMENT_START
-         )
-  ~'\n'*
-  ;
-
 HUMAN_COMMENT_START : '#';
 AUTO_GENERATED_COMMENT_START: '#=';
 
@@ -271,7 +303,7 @@ UNKNOWN_CHAR
  ;
 
 /*
- * fragments
+ * fragment
  */
 
 /// shortstring     ::=  "'" shortstringitem* "'" | '"' shortstringitem* '"'
@@ -307,6 +339,7 @@ fragment INT_PART
 /// DECIMAL      ::=  "." digit+
 DECIMAL : DIGIT+ '.' DIGIT+ ;
 
+
 /// exponent      ::=  ("e" | "E") ["+" | "-"] digit+
 fragment EXPONENT
  : [eE] [+-]? DIGIT+
@@ -315,9 +348,6 @@ fragment EXPONENT
 fragment SPACES
  : [ ]+
  ;
-
-
-
 
 fragment LINE_JOINING
  : '\\' SPACES? ( '\r'? '\n' | '\r' | '\f')
@@ -398,3 +428,4 @@ fragment FUNCTION_ID_CONTINUE
 fragment FUNCTION_ID_END
  : [!?]? ':'
  ;
+
