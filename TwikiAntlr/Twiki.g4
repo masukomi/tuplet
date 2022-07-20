@@ -27,6 +27,7 @@ line:
 line_items:
    function_call+  comment_line?
    | function_types_comment
+   | let_declaration
    | variable_declaration
    | atom* comment_line
    | atom+ comment_line?
@@ -171,6 +172,10 @@ simple_function_args:
 variable_declaration:
     VAR_FUNC (GLOBAL_VARIABLE_NAME | VARIABLE_NAME) atom comment_line*
 ;
+let_declaration:
+    LET_FUNC START_LIST (START_LIST VARIABLE_NAME ATOM END_LIST)+ END_LIST
+    ;
+
 
 multiline_comment: MULTILINE_COMMENT;
 tabs: TABS;
@@ -191,6 +196,7 @@ STRING
 
 DEF : 'def';
 VAR_FUNC : 'var:';
+LET_FUNC : 'let:';
 RETURN : 'return';
 TRUE : 'true';
 FALSE : 'false';
