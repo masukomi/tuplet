@@ -74,11 +74,12 @@ function_def_args_list:
 function_types_comment:
   TABS* HUMAN_COMMENT_START+
   START_LIST
-    function_type_arg* (DATA_TYPE_NAME ('*' | '+'))?
+    function_type_arg* (variadic_function_type_arg)?
     END_LIST
   ROCKET
   (START_LIST function_type_arg+ END_LIST | function_type_arg)
  ;
+variadic_function_type_arg: DATA_TYPE_NAME ('*' | '+');
 
 // the function def line
 function_signature:
@@ -403,7 +404,7 @@ fragment UNICODE_OIDC
 // | UNICODE_OIDS
 // ;
 fragment ID_START
- : [a-z]
+ : '!'? [a-z]
  ;
 
 
