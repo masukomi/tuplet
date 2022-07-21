@@ -26,7 +26,8 @@ line:
  ;
 
 line_items:
-   function_call+  comment_line?
+   function_call+
+   | dereferenced_function_call+
    | function_types_comment
    | let_declaration
    | variable_declaration
@@ -94,6 +95,11 @@ function_signature:
  DEF FUNCTION_NAME function_def_args_list
  ;
 
+dereferenced_function_call:
+    '~:' VARIABLE_NAME
+    (atom+ comment_line?
+     | comment_line?)
+;
 function_call:
  FUNCTION_NAME atom+ comment_line?
  | FUNCTION_NAME comment_line?
