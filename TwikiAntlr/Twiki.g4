@@ -74,7 +74,7 @@ function_def_args_list:
 // # [integer string] => string
 // foo: [x y*]
 // # [integer string*] => string
-// # [integer string*] => [string float hash]
+// # [integer string*] => [string float dictionary]
 // # [<integer | float> string* ] => string
 // # [string <integer | float>* ] => string
 // # [integer] => [<string | float> integer]
@@ -123,7 +123,7 @@ dictionary_key:
  | GLOBAL_VARIABLE_NAME
  | VARIABLE_NAME
  | function_call
- // note: dosen't include lists or hashes
+ // note: dosen't include lists or dictionaries
  ;
 
 comment_line:
@@ -239,9 +239,9 @@ FUNCTION_NAME
 DATA_TYPE_NAME:
   'any'
   | 'boolean'
+  | 'dictionary'
   | 'float'
   | 'function'
-  | 'hash'
   | 'integer'
   | 'list'
   | 'string'
