@@ -9,7 +9,7 @@ var mah_list ["a" "list"
 		multiline comment line 1
 			indented multiline comment line 2
 ##
-def map: [function_ref list]
+def map: [function_ref list] # foo?
 	magic_here
 
 map: maybe:~ mah_list

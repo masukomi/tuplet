@@ -1,4 +1,4 @@
-grammar Twiki;
+grammar Tuplet;
 
 // All comments that start with "///" are copy-pasted from
 // The Python Language Reference
