@@ -172,6 +172,24 @@ a function with an associated contract is defined with =def-contract= instead of
 def-contract deposit: [amount]
     contract: [[amount number?:~]] => boolean?:~
 #+end_src
+
+Question: How to handle something more complicated like =list-of?: x=
+I think in that case we need to use lamdas. Since we're just passing in a refernce anyway it doesn't matter if it's a named or anonymous function.
+
+assuming a lambda syntax of =~>[]{  }=
+
+
+#+begin_src
+# presume all?: looks like: all?: [x test_function]
+
+def gimme-list: [foo]
+    var: all-numbers? ~>[x]{all?: number?: x}
+    contract: [[foo all-numbers]]
+# alternately, a less readable inline form
+def gimme-list: [foo]
+    contract: [[foo ~>[x]{all?: number?: x}]]
+#+end_src
+
 *** optional argument contracts
 Implementation-wise default variables should be addressed /before/ the contract is tested. So if we have a =[foo "bar"]= argument for which nothing has been passed in the implementation does something like the following, which ultimately means, we don't have to deal with this problem.
 
@@ -192,7 +210,7 @@ def-contract defaulted: [[foo "bar"]]
 the contract function itself iterates over each sublist
 #+begin_src
 def test-contract: [var function_ref]
-    if ~:function_ref var
+    if call: function_ref var
         true
         error: "#{var} did not satisfy the contract #{function_ref}"
 
@@ -358,19 +376,27 @@ These are currentyly unimplemented but i'm thinking they start like this
 *** function references
 - a pointer to a function. For example if a function takes a function as an argument. You only use this syntax at the calling site.
 - a function name followed by a tilde =foo:~=
-- dereferencing in a variable is done by flipping the referenced function sign and sticking it on the other end.
+- there is no need to explicitly dereference a function
+  For example =my-function: [foo]= is referenced as =my-function:~= which ends up in a variable somewhere like =some_function= which we then invoke with =call: some_function= however a shorthand is available for this which can help to help make it more explicit that the variable is a function. To do this we take function reference sign: =:~= and flip it around to the other side of the variable.
 
-  For example =my-function: [foo]= is referenced as =my-function:~= which ends up in a variable somewhere like =some_function= which we then invoke with =~:some_function=
+    #+begin_src
+    # anonymous function stored in hi variable
+    var hi: ~>[name]{println "hi #{name}"}
+    # named function
+    def hello: [name]
+        println "hello #{name}"
 
-#+begin_src
-# a function that takes a function as its first argument
-def foo: [some_func bar]
-    # [function string] => string
-    ~:some_func bar
+    def bar: [some_function some_var]
+        # some_function (a.k.a. hi or hello) can be called with
+        call: some_function some_var
+        # or
+        ~:some_function some_var
 
-# calling that function and passing it a pointer to some other function
-foo: a-function:~ "baz"
-#+end_src
+    # pass the foo variable to bar
+    bar: hi
+    # pass a reference to the hello function
+    bar: hello:~
+    #+end_src
 *** return values
 A function /must always/ return something or raise an error. If your function only generates side-effects (like printing to the screen) then return a boolean indicating if it completed successfully.
 
@@ -469,6 +495,15 @@ see =standard_lib/language= (e.g. =standard_lib/bash.sh=)
 - [ ] =to-string:=
   - =def to-string: [x]=
   - takes anything and converts it to a string
+- [ ] =call:=
+    #+begin_src
+    # call is conceptually
+    def call: [a_function vars*]
+    # but is never implemented
+    # instead it just converts in the parser to
+    (apply a_function vars )
+
+    #+end_src
 - [ ] =method-call:=
   - =def method-call: [var_obj arg_list]=
   - assumes you've got an object from a target language stored in a variable
@@ -546,22 +581,6 @@ there are 2 scopes:
 
 ** Scope Enforcement
 when in a method you should only be able to reference a variable that is defined in that method, either internally or as an argument, or in the global space.
-* contracts
-I'm thinking a pseudo-contract system that builds on the [[Self Documenting][Self Documenting]] functionality. Initialially at least, it would just trust that you've kept those comments up to date. and make sure that the output of one thing lines up with the input of what it's being passed to. This is very simplistic, and limited but it'd address a number of common human errors
-
-#+begin_src
-def foo: [bar]
-	#= [string] => string
-	"foo"
-def bar: [fum]
-	#= [string] => string
-	concat: fum "bar"
-def add: [x y]
-	#= [int int] => int
-	+: x y
-bar: foo: # valid. returns "foobar"
-bar: add: 1 2 # error. "bar: takes a string but add returns an int"
-#+end_src
 * types
 If we're going to have a self documenting language then we have to have a concept of object types. So, what types of objects does this language support
 
