@@ -14,21 +14,23 @@ main:
 
 
 line:
-  function_signature
-  |  newline_and_tabs* line_items+ // includes trailing comments
- | newline_and_tabs? function_signature comment_line?
- | newline function_types_comment
- | multiline_comment
- | tabs* line_items+
- | tabs* function_signature
- | newline_and_tabs+
- | tabs // potentially trailing tabs, which we don't want
+  function_signature                                                #function_signature_line
+  // vvv includes trailing comments vvv
+ |  newline_and_tabs* line_items+                                   #misc_items_line
+ | newline_and_tabs? function_signature comment_line?               #indented_function_signature_section
+ | newline function_contract                                        #function_contract_section
+ | multiline_comment                                                #multiline_comment_section
+ | tabs* line_items+                                                #misc_items_line
+ | tabs* function_signature                                         #function_signature_line
+ | newline_and_tabs+                                                #indentation
+ // vvv potentially trailing tabs, which we don't want
+ | tabs                                                             #maybe_indentation
  ;
 
 line_items:
    function_call+
    | dereferenced_function_call+
-   | function_types_comment
+   | function_contract
    | let_declaration
    | variable_declaration
    | atom* comment_line
@@ -37,7 +39,7 @@ line_items:
 ;
 
 atom:
- STRING
+ string
  | number
  | boolean
  | array_query
@@ -69,24 +71,23 @@ function_def_args_list:
   END_LIST comment_line?
  ;
 
-// foo: [x, y]
-// # [integer string] => string
-// foo: [x, [y "b"]]
-// # [integer string] => string
-// foo: [x y*]
-// # [integer string*] => string
-// # [integer string*] => [string float dictionary]
-// # [<integer | float> string* ] => string
-// # [string <integer | float>* ] => string
-// # [integer] => [<string | float> integer]
-function_types_comment:
- TABS* HUMAN_COMMENT_START+
+
+function_contract:
+ TABS CONTRACT_FUNC
   START_LIST
-    function_type_arg* (variadic_function_type_arg)?
-    END_LIST
+    contract_arg_pair*
+  END_LIST
   ROCKET
-  (START_LIST function_type_arg+ END_LIST | function_type_arg)
- ;
+  (START_LIST FUNCTION_REF+ END_LIST // a tuple
+    | FUNCTION_REF) // a simple return type
+;
+
+contract_arg_pair:
+ START_LIST
+    VARIABLE_NAME
+    FUNCTION_REF+
+ END_LIST
+;
 
 variadic_function_type_arg: DATA_TYPE_NAME ('*' | '+');
 
@@ -100,10 +101,25 @@ dereferenced_function_call:
     (atom+ comment_line?
      | comment_line?)
 ;
+
+
 function_call:
- FUNCTION_NAME atom+ comment_line?
+// foo: <bar: baz> # maybe comment
+// foo: <bar: <baz: beedle>> # maybe comment
+ grouped_function_call
+// foo: bar baz # maybe comment
+ | FUNCTION_NAME atom+ comment_line?
+// foo: # maybe comment
  | FUNCTION_NAME comment_line?
  ;
+
+grouped_function_call:
+  LESS_THAN
+  FUNCTION_NAME comment_line?
+  (newline_and_tabs? (atom | grouped_function_call)+ comment_line?)+
+  newline_and_tabs? GREATER_THAN comment_line?
+  ;
+
 
 FUNCTION_REF:
   FUNCTION_NAME '~'
@@ -133,11 +149,10 @@ dictionary_key:
  ;
 
 comment_line:
-  function_types_comment
-  |    TABS* (
-             HUMAN_COMMENT_START+
-             | AUTO_GENERATED_COMMENT_START
-              )
+  TABS* (
+         HUMAN_COMMENT_START+
+         | AUTO_GENERATED_COMMENT_START
+          )
        ~'\n'*
   ;
 boolean: TRUE | FALSE;
@@ -157,12 +172,12 @@ function_args:
 // string | integer boolean*
 // impling (string | integer) boolean*
 // maybe < string | integer > boolean*
-function_type_arg:
-  // string integer boolean*
-  DATA_TYPE_NAME
-  // < string | integer >
-  | LESS_THAN DATA_TYPE_NAME (ARG_OR DATA_TYPE_NAME)* GREATER_THAN
-  ;
+//function_type_arg:
+//  // string integer boolean*
+//  DATA_TYPE_NAME
+//  // < string | integer >
+//  | LESS_THAN DATA_TYPE_NAME (ARG_OR DATA_TYPE_NAME)* GREATER_THAN
+//  ;
 
 defaultable_function_arg
  : newline_and_tabs*  default_parameter_def+
@@ -229,6 +244,7 @@ DEF : 'def';
 VAR_FUNC : 'var:';
 LET_FUNC : 'let:';
 ERROR_FUNC : 'error:';
+CONTRACT_FUNC : 'contract:';
 RETURN : 'return';
 TRUE : 'true';
 FALSE : 'false';
@@ -268,7 +284,8 @@ NAME
 
 
 SPECIAL_FUNCTION
- : (ASSIGN
+ :
+ (ASSIGN
     | ADD
     | MINUS
     | DIV
@@ -278,7 +295,8 @@ SPECIAL_FUNCTION
     | GT_EQ
     | LT_EQ
     | NOT_EQ
-    | RETURN) ':'
+    | RETURN
+    ) ':'
     ;
 
 
