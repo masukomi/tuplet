@@ -457,7 +457,7 @@ fragment ID_CONTINUE
 
 fragment FUNCTION_ID_CONTINUE
  : ID_START
- | '-'
+ | [/><=-] | DIGIT
 // | [\p{Mn}]
 // | [\p{Mc}]
 // | [\p{Nd}]
