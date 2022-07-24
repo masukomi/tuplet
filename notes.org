@@ -1,13 +1,10 @@
 PROPERTIES:
 :ID:       0d5789bb-e727-4ede-a5cb-afffbc0ff3ed
 :END:
-#+title: twiki
+#+title: Tuplet
 
+Development Notes concerning the Tuplet language
 
-Twiki == btbd
-(Better Than Bash. Definitely.)
-
-[[https://buckrogers.fandom.com/wiki/Twiki][Wiki page about Twiki]]
 
 * TODO
 - [ ] describe immutable variable names in grammar
@@ -95,6 +92,15 @@ Twiki == btbd
 - def-contract
 - true
 - false
+- return ?? (maybe... currently =return:= in grammar)
+- undefined # not the same as nil
+* Special Functions
+- =import:=
+- =var:=
+- =method-call:=
+- =shell:=
+- =any:=
+- =to-string:=
 * Self Documenting
 
 People say languages are "self documenting" but they don't mean it literally.
@@ -164,13 +170,14 @@ We're going to copy ruthelessly from [[https://docs.racket-lang.org/guide/contra
 I'm going to start with "flat contracts" which can be checked immediately. They will be tied to functions only. No declaring variables with contracts (for now).
 
 *** contract syntax
-a function with an associated contract is defined with =def-contract= instead of =def=. Its first line must be =contract: ...= which corresponds to Racket's ~(-> ...)~
+contracts are a special function that describe the behavior of the function that contains them.
+
 
 =contract:= takes a list of lists. Each sub-list starts with one of the named variables of the function and is followed by references to one or more functions which should be applied to the variable. Each referenced function must take one argument and return a boolean.
 
 #+begin_src
-def-contract deposit: [amount]
-    contract: [[amount number?:~]] => boolean?:~
+def deposit: [amount]
+    contract: [[[[amount number?:~]]]] => boolean?:~
 #+end_src
 
 Question: How to handle something more complicated like =list-of?: x=
@@ -195,7 +202,7 @@ Implementation-wise default variables should be addressed /before/ the contract 
 
 #+begin_src
 def-contract defaulted: [[foo "bar"]]
-	contract: [[foo string?:~]]
+	contract: [[[[foo string?:~]]]] => string?:~
   #...
 # becomes this in Janet
 (defn defaulted
@@ -224,8 +231,20 @@ def contract: [vars_and_tests]
 
         
 #+end_src
+
 *** variadic argument contracts
 ???
+*** varying argument types
+#+begin_src text
+def to-integer: [x]
+    contract: \[\[x or: number?:~ string?]]= => integer?:~
+    var response = -1
+    case: x
+          [integer:?~ =: response x]
+          [float:?~ =: response float-to-int: x]
+          [string:?~ =: response string-to-int: x]
+    return response
+#+end_src
 *** contract specific standard library
 (ugh another batch of things to write)
 Note that these are standard functions that can be used whenever needed.
@@ -235,6 +254,7 @@ Note that these are standard functions that can be used whenever needed.
 - [ ] =integer?:=
 - [ ]
 ** function signature annotations
+OBSOLETE THINKING
 
 
 In form, function signature annotations reflect the function they are annotating.
@@ -314,11 +334,18 @@ def string_multilpier: [times string]
   - must end with a letter or number
   - must start with a letter
 - globals: =@ALL_CAPS_SNAKE_CASE=
-  - preceeded by =@= (kinda looks like a globe)
+  - preceeded by =@= , because it kinda looks like a globe.
   - all caps
   - snake case
+  - global within the context of the current module (namespace) /and/ directly accessible from outside the module.
+- private globals:
+  - a private global is prefaced with =@P_= . These are only accessible within the context of the module.
+- private local variables:
+  - All non-global variables are limited to the scope within wich they were declared (module or function). As such there is no need to preface them with =p_=. They are private by default.
+
 - variables must be declared before they can be used.
 - currently /not/ supporting =null= variables.
+  - i suspect i'll have to add support for this eventually, but I'm interested in seeing how long I can go without doing so.
 - declaration
     =var: <variable_name> <atom>=
 
@@ -366,6 +393,8 @@ LESSER <:
 - ends with letter, =!=, or =?=
   - =!= implies mutation
   - =?= implies it'll return a boolean
+- starts with letter
+  - starting a function with =p-= designates it as private function.
 *** named functions
 - a named function is defined with =def <function_name>: [<argument list>]=
 - anything indented below it is part of it
@@ -399,6 +428,8 @@ These are currentyly unimplemented but i'm thinking they start like this
     #+end_src
 *** return values
 A function /must always/ return something or raise an error. If your function only generates side-effects (like printing to the screen) then return a boolean indicating if it completed successfully.
+*** private functions
+
 
 *** TODO
 - [ ] raise syntax error if def line not followed by indented line
@@ -454,6 +485,33 @@ see =standard_lib/language= (e.g. =standard_lib/bash.sh=)
 - [ ] while
 - [ ] map (takes a function) & returns a list
   - =def map: [function_ref list]=
+- [ ] =defined?:=
+  returns true if none of the arguments are "undefined"
+- [ ] =case:=
+  #+begin_src text
+    def case: [x tests]
+      contract: [\[x any] [tests list?:~]]
+      var: to_call_ref undefined
+      each: x tests
+       when call: tests[0] x
+          do:
+            =: to_call_ref tests[1]
+            break
+
+      if !=: to_call_ref undefined
+        if: >: size: tests
+              2
+        return: call: to_call_ref explode:
+
+
+
+    # example usage
+    case: x
+          [[integer:?~ ~>[y]{=: response y}]
+          [float:?~ ~>[y]{=: response float-to-int: x}]
+          [string:?~ ~>[y]{=: response string-to-int: x}]]
+
+  #+end_src
 - [ ] append (appends to list)
 - [ ] each (takes a function)
 - [ ] +
