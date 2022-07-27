@@ -15,6 +15,7 @@ main:
 
 line:
   function_signature                                                #function_signature_line
+ | lambda_signature                                                 #lambda_signature_line
   // vvv includes trailing comments vvv
  |  newline_and_tabs* line_items+                                   #misc_items_line
  | newline_and_tabs? function_signature comment_line?               #indented_function_signature_section
@@ -94,6 +95,9 @@ variadic_function_type_arg: DATA_TYPE_NAME ('*' | '+');
 // the function def line
 function_signature:
  DEF FUNCTION_NAME function_def_args_list
+ ;
+lambda_signature:
+ LAMBDA function_def_args_list (LESS_THAN function_call  GREATER_THAN)?
  ;
 
 dereferenced_function_call:
@@ -208,7 +212,8 @@ simple_function_args:
 ;
 
 variable_declaration:
-    VAR_FUNC (GLOBAL_VARIABLE_NAME | VARIABLE_NAME) atom comment_line*
+    VAR_FUNC (GLOBAL_VARIABLE_NAME | VARIABLE_NAME)
+    (atom | lambda_signature)  comment_line*
 ;
 let_declaration:
     LET_FUNC START_LIST (START_LIST VARIABLE_NAME ATOM END_LIST)+ END_LIST
@@ -241,6 +246,7 @@ STRING
 
 
 DEF : 'def';
+LAMBDA: 'lambda:';
 VAR_FUNC : 'var:';
 LET_FUNC : 'let:';
 ERROR_FUNC : 'error:';

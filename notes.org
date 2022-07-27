@@ -654,3 +654,50 @@ If we're going to have a self documenting language then we have to have a concep
 - function_ref
   =foo:~= is a reference to the =foo:= function. You would use this when passing around a named function to be called later.
 - function
+* lambdas
+I've been toying with the syntax of =~>[x]{println "x"}= for a lambda but really... i don't like it.
+
+Then i saw how python handles it:
+#+begin_src python
+# lambda arguments : expression
+x = lambda a : a + 10
+print(x(5))
+#+end_src
+
+So what if we built off of that. What if =lambda:= is a special function, basically a macro.
+
+#+begin_src
+# lambda: []
+#		do_something:
+
+var: plus_ten lambda: [a]
+	return +: a 10
+
+println plus_ten: 5
+#=> outputs 15
+#+end_src
+
+under the covers it'd be converted to
+
+#+begin_src scheme
+(def x (fn [a]
+           (+ a 10)))
+(print  (x 5) )
+#+end_src
+
+Janet seems perfectly happy to print a non-string
+
+using it in a map
+#+begin_src text
+map: a_list lambda: [x]
+				+: x 11
+
+map: a_list <lambda: [x]
+				+: x 11>
+#+end_src
+
+We learn 2 things from the above.
+1. yup, looks legit. Not only that, looks like any other function call. YAAAY
+2. it's legal to indent as many levels as you want in a single line.
+   in this case going from 1 to 3. We already knew it was legal to dedent
+   multiple levels.
