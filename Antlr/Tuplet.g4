@@ -34,8 +34,8 @@ line_items:
    | function_contract
    | let_declaration
    | variable_declaration
-   | atom* comment_line
-   | atom+ comment_line?
+   | atom* (comment_line | ELIPSIS)
+   | atom+ (comment_line | ELIPSIS)?
    | newline
 ;
 
@@ -254,6 +254,7 @@ CONTRACT_FUNC : 'contract:';
 TRUE : 'true';
 FALSE : 'false';
 NEWLINE : '\n';
+ELIPSIS : ('…' | '...');
 
 GLOBAL_VARIABLE_NAME :  GLOBAL_ID_START GLOBAL_ID_CONTINUE* ;
 
