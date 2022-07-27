@@ -1,0 +1,9 @@
+#+title: Readme
+
+Tuplet is a love-child born from the union of Scheme, Python, and Ruby. It has a smattering of genetic heretage from other languages too. Every piece of functionality tries to adhere to our [[https://tuplet.dev/guiding_principles/][Guiding Principles]].
+
+Behind the scenes, Tuplet is a source-to-source compiler (transpiler) that compiles it to [[https://janet-lang.org][Janet]] (a thouroughly modern lisp), and then on to C.
+
+It's still /very/ early stages here in the repo. It's not even a /remotely/ a usable language..yet. If you're curious though, progress is being documented over at [[https://tuplet.dev][Tuplet.dev]].
+
+Right now, the only notable thing in this repo is [[https://github.com/masukomi/tuplet/blob/main/Antlr/Tuplet.g4][The Antrl4 Grammar]].
