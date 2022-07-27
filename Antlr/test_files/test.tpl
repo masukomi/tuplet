@@ -10,23 +10,23 @@ var mah_list ["a" "list"
 			indented multiline comment line 2
 ##
 def map: [function_ref list] # foo?
-	magic_here
+	return magic_here
 
 map: maybe:~ mah_list
 
 def foo: [arg1 arg2]
 	bar: arg1 arg2
 	baz: arg2
-	beedle:
+	return beedle:
 
 def many-args: [foo bar*]
-	and: bar
+	return and: bar
 
 def maybe: [x]
-	if: and: x true
-		"yup" # trailing comment
-		"nope"
-		# yup and nope are args of if:
+	return if: <and: x true>
+				"yup" # trailing comment
+				"nope"
+				# yup and nope are args of if:
 
 def hello-person: [first_name
 	[last_name "smith"]]
