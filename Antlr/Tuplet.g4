@@ -251,18 +251,19 @@ VAR_FUNC : 'var:';
 LET_FUNC : 'let:';
 ERROR_FUNC : 'error:';
 CONTRACT_FUNC : 'contract:';
-RETURN : 'return';
 TRUE : 'true';
 FALSE : 'false';
-
 NEWLINE : '\n';
 
 GLOBAL_VARIABLE_NAME :  GLOBAL_ID_START GLOBAL_ID_CONTINUE* ;
 
 FUNCTION_NAME
   : ID_START FUNCTION_ID_CONTINUE* FUNCTION_ID_END
+  | RETURN
   | SPECIAL_FUNCTION
   ;
+
+RETURN : 'return';
 
 DATA_TYPE_NAME:
   'any'
@@ -301,7 +302,6 @@ SPECIAL_FUNCTION
     | GT_EQ
     | LT_EQ
     | NOT_EQ
-    | RETURN
     ) ':'
     ;
 
