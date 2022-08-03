@@ -11,7 +11,7 @@ line:
      | NEWLINE whatevs trailing_comment?            #unindented_line
      | whatevs trailing_comment?                    #unindented_line
      | NEWLINE+                                     #ignore
-    ;
+ ;
 
 
 multiline_comment: MULTILINE_COMMENT;
