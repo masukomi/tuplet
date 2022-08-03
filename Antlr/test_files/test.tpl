@@ -1,7 +1,7 @@
 {a => "dictionary" # comment
 	"spanning" => 3
 	lines => yo} # comment
-var mah_list ["a" "list"
+var: mah_list ["a" "list"
 	"that spans lines" ]
 "a string
 	that spans lines"
@@ -37,6 +37,7 @@ def variadic: [foo
 	"variadic yo"
 
 # a comment line
+	# a indented comment line
 var: @GLOBAL_X "GLOBAL_X"
 true
 false
